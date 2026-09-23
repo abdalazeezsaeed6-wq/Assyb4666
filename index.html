@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>النظام المحاسبي - المهندس يوسف خندور</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root { --primary-color: #0c2340; --secondary-color: #e67e22; --accent-color: #27ae60; --bg-color: #f4f6f9; --card-bg: #ffffff; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+    body { background-color: var(--bg-color); color: #333; direction: rtl; }
+
+    .official-header {
+      background: var(--primary-color); color: white; padding: 12px 15px; border-radius: 12px; margin: 10px;
+      display: flex; align-items: center; justify-content: space-between; border: 2px solid var(--secondary-color);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .header-info-right h2 { font-size: 1.1rem; color: #fff; }
+    .header-logo { width: 55px; height: 55px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--secondary-color); }
+    .header-logo i { font-size: 28px; color: var(--secondary-color); }
+
+    .container { padding: 10px; max-width: 700px; margin: 0 auto; }
+    .screen { display: none; background: var(--card-bg); padding: 18px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-top: 10px; }
+    .screen.active { display: block; }
+
+    h3.screen-title { font-size: 1.15rem; color: var(--primary-color); border-bottom: 2px solid var(--secondary-color); padding-bottom: 8px; margin-bottom: 12px; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 0.88rem; font-weight: bold; margin-bottom: 4px; }
+    .form-control { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 0.95rem; }
+
+    .grid-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .grid-btn { background: var(--primary-color); color: white; border: none; padding: 14px; border-radius: 10px; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .grid-btn i { font-size: 22px; color: var(--secondary-color); }
+
+    .btn-submit { width: 100%; background: var(--accent-color); color: white; border: none; padding: 12px; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
+    .btn-back { width: 100%; background: #7f8c8d; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; margin-top: 8px; }
+    .btn-whatsapp { background: #25D366; color: white; padding: 12px; border-radius: 8px; text-decoration: none; display: none; text-align: center; font-weight: bold; margin-top: 10px; }
+
+    .box-summary { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 12px; text-align: center; }
+    .box-card { padding: 10px; border-radius: 8px; color: white; }
+    .box-card.in { background: #27ae60; } .box-card.out { background: #e74c3c; } .box-card.balance { background: #2980b9; }
+
+    .loader-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; justify-content: center; align-items: center; color: white; flex-direction: column; }
+    .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--secondary-color); border-radius: 50%; width: 35px; height: 35px; animation: spin 1s linear infinite; margin-bottom: 10px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .project-card { background: #f8f9fa; border: 1px solid #ddd; padding: 12px; border-radius: 8px; margin-bottom: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+    .project-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .p-stat-box { background: #f1f8ff; border: 1px solid #b3d7ff; padding: 10px; border-radius: 8px; text-align: center; font-size: 0.85rem; }
+    .p-stat-box strong { font-size: 1rem; color: #0c2340; display: block; margin-top: 3px; }
+
+    @media print {
+      body * { visibility: hidden !important; }
+      #printableArea, #printableArea * { visibility: visible !important; }
+      #printableArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; padding: 10px; }
+      .print-header { background: #0c2340 !important; color: white !important; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; -webkit-print-color-adjust: exact; }
+      table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 15px; }
+      th, td { border: 1px solid #000; padding: 8px; text-align: center; font-size: 0.85rem; }
+      th { background-color: #f2f2f2 !important; -webkit-print-color-adjust: exact; }
+      .worker-report-block { page-break-inside: avoid; margin-bottom: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="loader-overlay" id="loader">
+    <div class="spinner"></div>
+    <span id="loaderMsg">جاري التحميل...</span>
+  </div>
+
+  <div class="container">
+    <div class="official-header">
+      <div class="header-info-right">
+        <h2>المهندس الكهربائي</h2>
+        <p style="color: var(--secondary-color); font-weight: bold;">يوسف سعيد يسلم خندور</p>
+        <p style="font-size: 0.75rem;">تمديد شبكات الكهرباء والمنظومات الشمسية</p>
+      </div>
+      <div class="header-logo"><i class="fa-solid fa-bolt"></i></div>
+      <div style="font-size: 0.8rem; text-align: left;">
+        <div>771592077 <i class="fa-solid fa-phone"></i></div>
+        <div>254220788 <i class="fa-solid fa-building-columns"></i></div>
+      </div>
+    </div>
+
+    <!-- تسجيل الدخول -->
+    <div class="screen active" id="authScreen">
+      <h3 class="screen-title"><i class="fa-solid fa-user-lock"></i> تسجيل الدخول</h3>
+      <div id="otpStep1">
+        <div class="form-group"><label>الاسم الكامل</label><input type="text" id="authFullName" class="form-control"></div>
+        <div class="form-group"><label>رقم الجوال</label><input type="tel" id="authPhone" class="form-control" placeholder="77XXXXXXX"></div>
+        <button class="btn-submit" onclick="sendOTP()">إرسال كود التحقق لتليجرام</button>
+      </div>
+      <div id="otpStep2" style="display: none;">
+        <div class="form-group"><label>كود التحقق</label><input type="number" id="authOTP" class="form-control"></div>
+        <button class="btn-submit" onclick="verifyOTP()">تأكيد ودخول</button>
+      </div>
+    </div>
+
+    <!-- الواجهة الرئيسية -->
+    <div class="screen" id="mainDashboard">
+      <h3 class="screen-title"><i class="fa-solid fa-gauge"></i> القائمة الرئيسية</h3>
+      <div class="grid-buttons">
+        <button class="grid-btn" onclick="showScreen('addWorkerScreen')"><i class="fa-solid fa-user-plus"></i> إضافة عامل</button>
+        <button class="grid-btn" onclick="showScreen('addProjectScreen')"><i class="fa-solid fa-city"></i> إضافة مشروع / موقع</button>
+        <button class="grid-btn" onclick="showScreen('dailyAttendanceScreen')"><i class="fa-solid fa-calendar-check"></i> التحضير اليومي</button>
+        <button class="grid-btn" onclick="showScreen('boxScreen')"><i class="fa-solid fa-vault"></i> الصندوق</button>
+        <button class="grid-btn" onclick="showScreen('reportsScreen')"><i class="fa-solid fa-file-invoice-dollar"></i> التقارير المحاسبية</button>
+        <button class="grid-btn" onclick="refreshSystemData()"><i class="fa-solid fa-rotate"></i> تحديث البيانات</button>
+      </div>
+    </div>
+
+    <!-- إضافة عامل -->
+    <div class="screen" id="addWorkerScreen">
+      <h3 class="screen-title">إضافة عامل جديد</h3>
+      <form onsubmit="submitWorker(event)">
+        <div class="form-group"><label>رقم العامل</label><input type="text" id="wId" class="form-control" readonly></div>
+        <div class="form-group"><label>اسم العامل</label><input type="text" id="wName" class="form-control" required></div>
+        <div class="form-group"><label>رقم الجوال</label><input type="tel" id="wPhone" class="form-control" required></div>
+        <div class="form-group"><label>المستوى</label><select id="wLevel" class="form-control"><option value="معلم">معلم</option><option value="مهني">مهني</option><option value="عامل">عامل</option></select></div>
+        <div class="form-group"><label>أجرة الصباح</label><input type="number" id="wMorning" class="form-control" required></div>
+        <div class="form-group"><label>أجرة المساء</label><input type="number" id="wEvening" class="form-control" required></div>
+        <button type="submit" class="btn-submit">حفظ العامل</button>
+        <button type="button" class="btn-back" onclick="showScreen('mainDashboard')">عودة</button>
+      </form>
+    </div>
+
+    <!-- إضافة وإدارة المشاريع -->
+    <div class="screen" id="addProjectScreen">
+      <h3 class="screen-title"><i class="fa-solid fa-city"></i> إدارة المشاريع والمواقع</h3>
+      <form onsubmit="submitProject(event)" style="margin-bottom: 15px;">
+        <div class="form-group"><label>اسم المشروع / الموقع الجديد</label><input type="text" id="pName" class="form-control" placeholder="أدخل اسم الموقع واضغط إضافة" required></div>
+        <button type="submit" class="btn-submit"><i class="fa-plus"></i> حفظ المشروع</button>
+      </form>
+
+      <h4 style="font-size: 0.95rem; margin-bottom: 8px; color: var(--primary-color);">المشاريع والمواقع المسجلة:</h4>
+      <div id="projectsListContainer"></div>
+      <button type="button" class="btn-back" onclick="showScreen('mainDashboard')">عودة للرئيسية</button>
+    </div>
+
+    <!-- تفاصيل كشف حساب الموقع المطور -->
+    <div class="screen" id="projectDetailsScreen">
+      <h3 class="screen-title" id="pDetailTitle">تحليل المشروع</h3>
+      
+      <div class="project-stats-grid" id="pStatsGrid"></div>
+
+      <div class="form-group">
+        <label>نوع الكشف المطلوب طباعته للموقع</label>
+        <select id="pReportFilter" class="form-control">
+          <option value="full">عرض الكشف الشامل والكامل للموقع</option>
+          <option value="workers">كشف أجور العمال فقط</option>
+          <option value="expenses">كشف مصروفات الموقع فقط</option>
+          <option value="incomes">كشف إيرادات وواردات الموقع فقط</option>
+        </select>
+      </div>
+
+      <button class="btn-submit" onclick="printProjectCustomReport()"><i class="fa-print"></i> تنزيل التقرير بصيغة PDF</button>
+      
+      <div id="projectDetailsTables" style="margin-top: 15px;"></div>
+
+      <button type="button" class="btn-back" onclick="showScreen('addProjectScreen')">عودة للمشاريع</button>
+    </div>
+
+    <!-- التحضير اليومي -->
+    <div class="screen" id="dailyAttendanceScreen">
+      <h3 class="screen-title">التحضير اليومي</h3>
+      <form onsubmit="submitAttendance(event)">
+        <div class="form-group"><label>اسم العامل</label><select id="attWorker" class="form-control" onchange="updateShiftWage()" required></select></div>
+        <div class="form-group"><label>تاريخ اليوم</label><input type="date" id="attDate" class="form-control" required></div>
+        <div class="form-group"><label>اختر موقع العمل / المشروع</label><select id="attSite" class="form-control" required></select></div>
+        <div class="form-group"><label>الفترة</label><select id="attShift" class="form-control" onchange="updateShiftWage()"><option value="صباحية">صباحية</option><option value="مسائية">مسائية</option></select></div>
+        <div class="form-group"><label>الأجرة الأساسية</label><input type="number" id="attBaseWage" class="form-control" required></div>
+        
+        <button type="submit" class="btn-submit">ترحيل البيانات</button>
+        <a id="attWaBtn" href="#" target="_blank" class="btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> إرسال الإشعار للواتساب الآن</a>
+        <button type="button" class="btn-back" onclick="showScreen('mainDashboard')">عودة</button>
+      </form>
+    </div>
+
+    <!-- الصندوق -->
+    <div class="screen" id="boxScreen">
+      <h3 class="screen-title">الصندوق</h3>
+      <div class="box-summary">
+        <div class="box-card in"><span>الوارد</span><strong id="boxIn">0</strong></div>
+        <div class="box-card out"><span>المنصرف</span><strong id="boxOut">0</strong></div>
+        <div class="box-card balance"><span>الرصيد</span><strong id="boxBalance">0</strong></div>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-submit" style="background:#27ae60;" onclick="showScreen('receiptScreen')">سند قبض</button>
+        <button class="btn-submit" style="background:#c0392b;" onclick="showScreen('paymentScreen')">سند صرف</button>
+      </div>
+      <button type="button" class="btn-back" onclick="showScreen('mainDashboard')">عودة</button>
+    </div>
+
+    <!-- سند قبض المطور -->
+    <div class="screen" id="receiptScreen">
+      <h3 class="screen-title">سند قبض (توريد مبلغ)</h3>
+      <form onsubmit="submitReceipt(event)">
+        <div class="form-group"><label>اسم المورد / العميل</label><input type="text" id="recName" class="form-control" required></div>
+        <div class="form-group"><label>اختر الموقع / المشروع المورد له</label><select id="recSite" class="form-control" required></select></div>
+        <div class="form-group"><label>المبلغ (رقماً)</label><input type="number" id="recAmount" class="form-control" required></div>
+        <div class="form-group"><label>البيان / السبب</label><input type="text" id="recNotes" class="form-control" required></div>
+        <button type="submit" class="btn-submit">ترحيل وحفظ السند</button>
+        <button type="button" class="btn-back" onclick="showScreen('boxScreen')">إلغاء</button>
+      </form>
+    </div>
+
+    <!-- سند صرف المطور -->
+    <div class="screen" id="paymentScreen">
+      <h3 class="screen-title">سند صرف (مصروفات)</h3>
+      <form onsubmit="submitPayment(event)">
+        <div class="form-group">
+          <label>اسم المستلم</label>
+          <select id="payReceiver" class="form-control" onchange="onPayReceiverChange()" required></select>
+        </div>
+        
+        <div class="form-group" id="customReceiverInput" style="display: none;">
+          <label>اكتب اسم المستلم اليدوي</label>
+          <input type="text" id="payCustomName" class="form-control" placeholder="اسم الشخص أو الجهة">
+        </div>
+
+        <div class="form-group">
+          <label>اختر موقع العمل المرتبط بالصرف</label>
+          <select id="paySite" class="form-control" onchange="fetchWorkerSiteBalance()"></select>
+        </div>
+
+        <div id="workerPayCalcDetails" style="display: none; background: #eef7fc; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+          <div style="font-size: 0.85rem; color: #27ae60; margin-bottom: 4px;">المتبقي له في هذا الموقع: <strong id="siteRemBalance">0</strong> ريال</div>
+          <div style="font-size: 0.85rem; color: #1a365d; margin-bottom: 4px;">المتبقي له في باقي المواقع الأخرى: <strong id="otherRemBalance">0</strong> ريال</div>
+          <div style="font-size: 0.88rem; color: #c0392b;">إجمالي المستحق الكلي للعامل: <strong id="allRemBalance">0</strong> ريال</div>
+        </div>
+
+        <div class="form-group">
+          <label>نوع / سبـب الصرف</label>
+          <input type="text" id="payExpenseType" class="form-control" placeholder="أجرة عمل / شراء مواد / نقل / نثريات" required>
+        </div>
+
+        <div class="form-group"><label>المبلغ المصروف</label><input type="number" id="payAmount" class="form-control" required></div>
+        <button type="submit" class="btn-submit">ترحيل السند</button>
+        <a id="payWaBtn" href="#" target="_blank" class="btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> إرسال الإشعار عبر الواتساب</a>
+        <button type="button" class="btn-back" onclick="showScreen('boxScreen')">إلغاء</button>
+      </form>
+    </div>
+
+    <!-- التقارير المتقدمة الشاملة -->
+    <div class="screen" id="reportsScreen">
+      <h3 class="screen-title">التقارير المحاسبية العامة</h3>
+      <div class="form-group">
+        <label>نوع التقرير</label>
+        <select id="reportType" class="form-control" onchange="onReportTypeChange()">
+          <option value="box">كشف حركة الصندوق (وارد / منصرف)</option>
+          <option value="worker">كشف حساب عامل / عميل</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="repSiteGroup">
+        <label>حدد المشروع / الموقع</label>
+        <select id="repSiteSelect" class="form-control">
+          <option value="all">جميع المواقع والمشاريع</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="repBoxSection">
+        <label>نوع الحركة بالصندوق</label>
+        <select id="repBoxFilter" class="form-control"><option value="all">الكل (وارد ومنصرف)</option><option value="in">الوارد فقط</option><option value="out">المنصرف فقط</option></select>
+      </div>
+
+      <div class="form-group" id="repWorkerSection" style="display:none;">
+        <label>حدد اسم العامل</label>
+        <select id="repWorkerSelect" class="form-control"></select>
+      </div>
+
+      <button class="btn-submit" onclick="generateGeneralReport()">عرض وطباعة التقرير / PDF</button>
+      <button type="button" class="btn-back" onclick="showScreen('mainDashboard')">عودة للرئيسية</button>
+    </div>
+
+  </div>
+
+  <div id="printableArea" style="display: none;">
+    <div class="print-header">
+      <div>
+        <h2 style="font-size: 1.2rem;">المهندس الكهربائي يوسف سعيد يسلم خندور</h2>
+        <p style="font-size: 0.85rem;">تمديد شبكات الكهرباء والمنظومات الشمسية</p>
+        <p style="font-size: 0.8rem;">تلفون: 771592077 | حساب العمقي: 254220788</p>
+      </div>
+      <div style="font-size: 2rem;"><i class="fa-solid fa-bolt"></i></div>
+    </div>
+    <hr style="margin: 12px 0; border: 1px solid #0c2340;">
+    <h3 id="printTitle" style="text-align: center; margin-bottom: 15px; font-size: 1.1rem; color: #0c2340;"></h3>
+    <div id="printBody"></div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz65YlNmpTW45hiJzUALUTCAd49KdEtWQcMuxrPSaCkuTPsWbYKiO0flyA5hW0rVAPobQ/exec";
+    let currentProjectData = null;
+
+    window.onload = function() {
+      if (localStorage.getItem("isLoggedIn") === "true") {
+        showScreen('mainDashboard'); refreshSystemData();
+      } else showScreen('authScreen');
+      document.getElementById('attDate').valueAsDate = new Date();
+    };
+
+    function showLoader(msg) { document.getElementById('loaderMsg').innerText = msg; document.getElementById('loader').style.display = 'flex'; }
+    function hideLoader() { document.getElementById('loader').style.display = 'none'; }
+    function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+
+    function sendOTP() {
+      showLoader("جاري إرسال الكود لتليجرام...");
+      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "sendOTP", fullName: document.getElementById('authFullName').value, phone: document.getElementById('authPhone').value }) })
+      .then(r => r.json()).then(d => { hideLoader(); alert(d.message); document.getElementById('otpStep1').style.display='none'; document.getElementById('otpStep2').style.display='block'; });
+    }
+
+    function verifyOTP() {
+      showLoader("تحقق...");
+      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "verifyOTP", phone: document.getElementById('authPhone').value, otp: document.getElementById('authOTP').value }) })
+      .then(r => r.json()).then(d => { hideLoader(); if(d.success) { localStorage.setItem("isLoggedIn", "true"); showScreen('mainDashboard'); refreshSystemData(); } else alert(d.message); });
+    }
+
+    function refreshSystemData() {
+      showLoader("تحديث البيانات...");
+      fetch(SCRIPT_URL + "?action=getInitialData")
+      .then(r => r.json()).then(data => {
+        hideLoader();
+        document.getElementById('boxIn').innerText = data.box.inTotal;
+        document.getElementById('boxOut').innerText = data.box.outTotal;
+        document.getElementById('boxBalance').innerText = data.box.balance;
+
+        // عمال
+        const wSelects = ['attWorker', 'payReceiver', 'repWorkerSelect'];
+        wSelects.forEach(id => {
+          const el = document.getElementById(id);
+          el.innerHTML = '<option value="">-- اختر العامل --</option>';
+          data.workers.forEach(w => el.innerHTML += `<option value="${w.name}" data-phone="${w.phone}" data-m="${w.morningRate}" data-e="${w.eveningRate}">${w.name}</option>`);
+        });
+        document.getElementById('payReceiver').innerHTML += '<option value="آخر">اسم مستلم آخر...</option>';
+
+        // مواقع
+        const attSite = document.getElementById('attSite');
+        const paySite = document.getElementById('paySite');
+        const recSite = document.getElementById('recSite');
+        const repSiteSelect = document.getElementById('repSiteSelect');
+        
+        attSite.innerHTML = '<option value="">-- اختر الموقع --</option>';
+        paySite.innerHTML = '<option value="">عام / بدون موقع</option>';
+        recSite.innerHTML = '<option value="">عام / بدون موقع</option>';
+        repSiteSelect.innerHTML = '<option value="all">جميع المواقع والمشاريع</option>';
+        
+        const pContainer = document.getElementById('projectsListContainer');
+        pContainer.innerHTML = '';
+
+        if (data.sites.length === 0) {
+          pContainer.innerHTML = '<div style="color:#777; text-align:center; padding:10px;">لا توجد مشاريع مسجلة بعد، قم بإضافة موقع في الأعلى.</div>';
+        } else {
+          data.sites.forEach(s => {
+            attSite.innerHTML += `<option value="${s}">${s}</option>`;
+            paySite.innerHTML += `<option value="${s}">${s}</option>`;
+            recSite.innerHTML += `<option value="${s}">${s}</option>`;
+            repSiteSelect.innerHTML += `<option value="${s}">${s}</option>`;
+            pContainer.innerHTML += `
+              <div class="project-card" onclick="viewProjectDetails('${s}')">
+                <strong>${s}</strong>
+                <span style="color: var(--secondary-color); font-size: 0.85rem;">عرض التفاصيل والتحليل <i class="fa-solid fa-arrow-left"></i></span>
+              </div>
+            `;
+          });
+        }
+
+        document.getElementById('wId').value = 101 + data.workers.length;
+      });
+    }
+
+    function submitWorker(e) {
+      e.preventDefault();
+      showLoader("حفظ العامل...");
+      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+        action: "addWorker", workerId: document.getElementById('wId').value, workerName: document.getElementById('wName').value,
+        phone: document.getElementById('wPhone').value, level: document.getElementById('wLevel').value,
+        morningRate: document.getElementById('wMorning').value, eveningRate: document.getElementById('wEvening').value
+      })}).then(r => r.json()).then(d => { hideLoader(); alert(d.message); showScreen('mainDashboard'); refreshSystemData(); });
+    }
+
+    function submitProject(e) {
+      e.preventDefault();
+      const name = document.getElementById('pName').value;
+      showLoader("حفظ المشروع...");
+      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+        action: "addProject", siteName: name
+      })}).then(r => r.json()).then(d => {
+        hideLoader(); alert(d.message);
+        document.getElementById('pName').value = '';
+        refreshSystemData();
+      });
+    }
+
+    function viewProjectDetails(siteName) {
+      showLoader("جاري إجراء التحليل المحاسبي للموقع...");
+      fetch(SCRIPT_URL + `?action=getProjectDetails&siteName=${encodeURIComponent(siteName)}`)
+      .then(r => r.json()).then(d => {
+        hideLoader();
+        currentProjectData = d;
+        document.getElementById('pDetailTitle').innerText = "تحليل مشروع: " + d.siteName;
+
+        const profitLossStyle = d.netProfitOrLoss >= 0 ? "color: #27ae60;" : "color: #c0392b;";
+        const profitLossText = d.netProfitOrLoss >= 0 ? "ربـح" : "خسـارة";
+
+        document.getElementById('pStatsGrid').innerHTML = `
+          <div class="p-stat-box">إجمالي العمال<strong>${d.workersCount} عمال</strong></div>
+          <div class="p-stat-box">إجمالي الفترات<strong>${d.morningShiftsCount + d.eveningShiftsCount} فترة</strong></div>
+          <div class="p-stat-box">صباحية: ${d.morningShiftsCount}<strong>${d.morningShiftsTotal} ريال</strong></div>
+          <div class="p-stat-box">مسائية: ${d.eveningShiftsCount}<strong>${d.eveningShiftsTotal} ريال</strong></div>
+          <div class="p-stat-box">إجمالي الوارد (الإيراد)<strong>${d.totalSiteIncomes} ريال</strong></div>
+          <div class="p-stat-box">إجمالي المصاريف والأجور<strong>${d.totalExpensesAll} ريال</strong></div>
+          <div class="p-stat-box" style="grid-column: span 2; background: #fff8e7; border-color: #ffe0b2;">
+            صافي النتيجة الماليـة للمشروع: <strong style="${profitLossStyle} font-size: 1.1rem;">${d.netProfitOrLoss} ريال (${profitLossText})</strong>
+          </div>
+        `;
+
+        renderProjectTablesHTML(d);
+        showScreen('projectDetailsScreen');
+      });
+    }
+
+    function renderProjectTablesHTML(d) {
+      let html = '';
+      
+      // جدول العمال المخصص لكل عامل
+      html += '<h4 style="color:#0c2340; margin-top:15px; margin-bottom:8px;">كشف أجور العمال التفصيلي للمشروع:</h4>';
+      if (d.workersList.length === 0) {
+        html += '<p style="font-size:0.85rem; color:#666;">لا يوجد تحضير عمال على هذا الموقع حتى الآن.</p>';
+      } else {
+        d.workersList.forEach(w => {
+          const remWorkerSite = w.totalEarned - w.totalPaid;
+          html += `
+            <div style="border: 1px solid #ccc; border-radius: 8px; padding: 10px; margin-bottom: 12px; background:#fff;">
+              <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:0.9rem; margin-bottom:6px; color:#0c2340;">
+                <span>العامل: ${w.name}</span>
+                <span>المتبقي له بهذا الموقع: <strong style="color:#c0392b;">${remWorkerSite} ريال</strong></span>
+              </div>
+              <div style="font-size:0.8rem; color:#555; margin-bottom:6px;">
+                فترات صباحية: (${w.morningDays}) بـ ${w.morningTotal} ريال | فترات مسائية: (${w.eveningDays}) بـ ${w.eveningTotal} ريال
+              </div>
+              <table style="width:100%; font-size:0.8rem; border-collapse:collapse;">
+                <thead><tr style="background:#f2f2f2;"><th>التاريخ</th><th>الفترة</th><th>الأساسي</th><th>إضافي</th><th>خصم</th><th>الصافي</th></tr></thead>
+                <tbody>
+                  ${w.detailsList.map(item => `<tr><td>${item.date}</td><td>${item.shiftType}</td><td>${item.baseWage}</td><td>${item.extraWage}</td><td>${item.discountWage}</td><td>${item.netWage}</td></tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+          `;
+        });
+      }
+
+      // جدول المصروفات
+      html += '<h4 style="color:#0c2340; margin-top:15px; margin-bottom:8px;">مصروفات الموقع التفصيلية:</h4>';
+      if (d.siteExpensesList.length === 0) {
+        html += '<p style="font-size:0.85rem; color:#666;">لا توجد مصروفات مسجلة على هذا الموقع.</p>';
+      } else {
+        html += `
+          <table style="width:100%; font-size:0.85rem; border-collapse:collapse; margin-bottom:12px;">
+            <thead><tr style="background:#0c2340; color:white;"><th>رقم السند</th><th>التاريخ</th><th>المستلم</th><th>السبب/النوع</th><th>المبلغ</th></tr></thead>
+            <tbody>
+              ${d.siteExpensesList.map(x => `<tr><td>${x.voucherNo}</td><td>${x.date}</td><td>${x.name}</td><td>${x.notes}</td><td>${x.amount}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+
+      // جدول الإيرادات والوارد
+      html += '<h4 style="color:#0c2340; margin-top:15px; margin-bottom:8px;">واردات وإيرادات الموقع:</h4>';
+      if (d.siteIncomesList.length === 0) {
+        html += '<p style="font-size:0.85rem; color:#666;">لا توجد إيرادات مسجلة على هذا الموقع.</p>';
+      } else {
+        html += `
+          <table style="width:100%; font-size:0.85rem; border-collapse:collapse; margin-bottom:12px;">
+            <thead><tr style="background:#27ae60; color:white;"><th>رقم السند</th><th>التاريخ</th><th>المورد/العميل</th><th>البيان</th><th>المبلغ</th></tr></thead>
+            <tbody>
+              ${d.siteIncomesList.map(x => `<tr><td>${x.voucherNo}</td><td>${x.date}</td><td>${x.name}</td><td>${x.notes}</td><td>${x.amount}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+
+      document.getElementById('projectDetailsTables').innerHTML = html;
+    }
+
+    function printProjectCustomReport() {
+      if (!currentProjectData) return;
+      const filter = document.getElementById('pReportFilter').value;
+      const d = currentProjectData;
+
+      document.getElementById('printTitle').innerText = "كشف تفصيلي بإيرادات ومصروفات مشروع (" + d.siteName + ")";
+      let html = '';
+
+      if (filter === "full" || filter === "workers") {
+        html += '<h4>1. كشف أجور العمال للمشروع</h4>';
+        d.workersList.forEach(w => {
+          const remWorkerSite = w.totalEarned - w.totalPaid;
+          html += `
+            <div class="worker-report-block">
+              <p><strong>اسم العامل:</strong> ${w.name} | <strong>المتبقي له في هذا المشروع:</strong> ${remWorkerSite} ريال</p>
+              <p style="font-size:0.8rem;">صباحية: (${w.morningDays}) بـ ${w.morningTotal} | مسائية: (${w.eveningDays}) بـ ${w.eveningTotal}</p>
+              <table>
+                <thead><tr><th>التاريخ</th><th>الفترة</th><th>الأجرة الأساسية</th><th>إضافي</th><th>خصم</th><th>صافي اليومية</th></tr></thead>
+                <tbody>
+                  ${w.detailsList.map(item => `<tr><td>${item.date}</td><td>${item.shiftType}</td><td>${item.baseWage}</td><td>${item.extraWage}</td><td>${item.discountWage}</td><td>${item.netWage}</td></tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+          `;
+        });
+      }
+
+      if (filter === "full" || filter === "expenses") {
+        html += '<h4>2. مصروفات الموقع التشغيلية</h4>';
+        html += `
+          <table>
+            <thead><tr><th>رقم السند</th><th>التاريخ</th><th>المستلم</th><th>نوع المصروف / البيان</th><th>المبلغ</th></tr></thead>
+            <tbody>
+              ${d.siteExpensesList.map(x => `<tr><td>${x.voucherNo}</td><td>${x.date}</td><td>${x.name}</td><td>${x.notes}</td><td>${x.amount}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+
+      if (filter === "full" || filter === "incomes") {
+        html += '<h4>3. واردات وإيرادات المشروع المقبوضة</h4>';
+        html += `
+          <table>
+            <thead><tr><th>رقم السند</th><th>التاريخ</th><th>المورد / العميل</th><th>البيان</th><th>المبلغ</th></tr></thead>
+            <tbody>
+              ${d.siteIncomesList.map(x => `<tr><td>${x.voucherNo}</td><td>${x.date}</td><td>${x.name}</td><td>${x.notes}</td><td>${x.amount}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+
+      if (filter === "full") {
+        html += `
+          <div style="border: 2px solid #000; padding: 10px; margin-top: 15px; font-size:0.9rem;">
+            <h4>التصفية والنتيجة المالية للمشروع:</h4>
+            <p>إجمالي المقبوضات (الوارد): ${d.totalSiteIncomes} ريال</p>
+            <p>إجمالي أجور العمال والمصاريف: ${d.totalExpensesAll} ريال</p>
+            <p><strong>النتيجة النهائية للمشروع: ${d.netProfitOrLoss} ريال (${d.netProfitOrLoss >= 0 ? "ربــح" : "خســارة"})</strong></p>
+          </div>
+        `;
+      }
+
+      document.getElementById('printBody').innerHTML = html;
+      document.getElementById('printableArea').style.display = 'block';
+      window.print();
+    }
+
+    function updateShiftWage() {
+      const el = document.getElementById('attWorker');
+      const opt = el.options[el.selectedIndex];
+      const shift = document.getElementById('attShift').value;
+      if (opt && opt.dataset) document.getElementById('attBaseWage').value = shift === "صباحية" ? opt.dataset.m : opt.dataset.e;
+    }
+
+    function submitAttendance(e) {
+      e.preventDefault();
+      const el = document.getElementById('attWorker');
+      const opt = el.options[el.selectedIndex];
+      showLoader("ترحيل اليومية...");
+      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+        action: "addDailyAttendance", workerName: opt.value, workerPhone: opt.dataset.phone, date: document.getElementById('attDate').value,
+        siteName: document.getElementById('attSite').value, shiftType: document.getElementById('attShift').value, baseWage: document.getElementById('attBaseWage').value
+      })}).then(r => r.json()).then(d => {
+        hideLoader(); alert(d.message);
+        if (d.whatsappText) {
+          const btn = document.getElementById('attWaBtn');
+          btn.href = `https://wa.me/${d.phone}?text=${encodeURIComponent(d.whatsappText)}`;
+          btn.style.display = 'block';
+        }
+      });
+    }
+
+    function onPayReceiverChange() {
+      const val = document.getElementById('payReceiver').value;
+      if (val === "آخر") {
+        document.getElementById('customReceiverInput').style.display = 'block';
+        document.getElementById('workerPayCalcDetails').style.display = 'none';
+      } else if (val) {
+        document.getElementById('customReceiverInput').style.display = 'none';
+        document.getElementById('workerPayCalcDetails').style.display = 'block';
+        fetchWorkerSiteBalance();
+      } else {
+        document.getElementById('customReceiverInput').style.display = 'none';
+        document.getElementById('workerPayCalcDetails').style.display = 'none';
+      }
+    }
+
+    function fetchWorkerSiteBalance() {
+      const w = document.getElementById('payReceiver').value;
+      const s = document.getElementById('paySite').value;
+      if (!w || w === "آخر") return;
+      fetch(SCRIPT_URL + `?action=getWorkerDetails&workerName=${encodeURIComponent(w)}&siteName=${encodeURIComponent(s)}`)
+      .then(r => r.json()).then(d => {
+        document.getElementById('siteRemBalance').innerText = d.remainingSite;
+        document.getElementById('otherRemBalance').innerText = d.remainingOtherSites;
+        document.getElementById('allRemBalance').innerText = d.remainingAll;
+      });
+    }
+
+    function submitPayment(e) {
+      e.preventDefault();
+      const el = document.getElementById('payReceiver');
+      const opt = el.options[el.selectedIndex];
+      const receiverName = el.value === "آخر" ? document.getElementById('payCustomName').value : el.value;
+      const amount = document.getElementById('payAmount').value;
+      const expenseType = document.getElementById('payExpenseType').value;
+
+      showLoader("ترحيل السند...");
+      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+        action: "addPaymentVoucher", receiverName: receiverName, workerPhone: opt.dataset ? opt.dataset.phone : "", siteName: document.getElementById('paySite').value,
+        amount: amount, expenseType: expenseType, notes: expenseType,
+        remainingSite: document.getElementById('siteRemBalance').innerText, remainingAll: document.getElementById('allRemBalance').innerText,
+        date: new Date().toLocaleDateString('ar-EG')
+      })}).then(r => r.json()).then(d => {
+        hideLoader(); alert(d.message);
+        if (d.whatsappText) {
+          const btn = document.getElementById('payWaBtn');
+          btn.href = `https://wa.me/${d.phone}?text=${encodeURIComponent(d.whatsappText)}`;
+          btn.style.display = 'block';
+        }
+        printVoucher("سند صرف", d.voucherNo, receiverName, amount, expenseType, document.getElementById('paySite').value);
+        refreshSystemData();
+      });
+    }
+
+    function submitReceipt(e) {
+      e.preventDefault();
+      showLoader("ترحيل السند...");
+      const name = document.getElementById('recName').value;
+      const amount = document.getElementById('recAmount').value;
+      const notes = document.getElementById('recNotes').value;
+      const site = document.getElementById('recSite').value;
+
+      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+        action: "addReceiptVoucher", receiverName: name, amount: amount, notes: notes, siteName: site, date: new Date().toLocaleDateString('ar-EG')
+      })}).then(r => r.json()).then(d => {
+        hideLoader(); alert(d.message);
+        printVoucher("سند قبض", d.voucherNo, name, amount, notes, site);
+        showScreen('boxScreen'); refreshSystemData();
+      });
+    }
+
+    function onReportTypeChange() {
+      const t = document.getElementById('reportType').value;
+      document.getElementById('repBoxSection').style.display = t === 'box' ? 'block' : 'none';
+      document.getElementById('repWorkerSection').style.display = t === 'worker' ? 'block' : 'none';
+    }
+
+    function generateGeneralReport() {
+      showLoader("تجهيز التقرير المحاسبي...");
+      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+        action: "getReportData", reportType: document.getElementById('reportType').value,
+        boxFilter: document.getElementById('repBoxFilter').value, workerName: document.getElementById('repWorkerSelect').value,
+        siteName: document.getElementById('repSiteSelect').value
+      })}).then(r => r.json()).then(d => {
+        hideLoader();
+        document.getElementById('printTitle').innerText = "كشف حساب محاسبي تفصيلي";
+        let html = '<table><thead><tr><th>الحركة</th><th>رقم السند/المرجع</th><th>التاريخ</th><th>الاسم/المستلم</th><th>الموقع</th><th>المبلغ</th><th>البيان</th></tr></thead><tbody>';
+        d.rows.forEach(r => { html += `<tr><td>${r.type}</td><td>${r.no}</td><td>${r.date}</td><td>${r.name}</td><td>${r.site}</td><td>${r.amount}</td><td>${r.notes}</td></tr>`; });
+        html += '</tbody></table>';
+        document.getElementById('printBody').innerHTML = html;
+        document.getElementById('printableArea').style.display = 'block';
+        window.print();
+      });
+    }
+
+    function printVoucher(title, no, name, amount, notes, site) {
+      document.getElementById('printTitle').innerText = title + " (" + (no || "تلقائي") + ")";
+      document.getElementById('printBody').innerHTML = `
+        <div style="text-align: right; font-size: 1.05rem; line-height: 2; padding: 15px; border: 2px solid #0c2340; border-radius: 8px;">
+          <p><strong>المستلم / المورد:</strong> ${name}</p>
+          <p><strong>الموقع / المشروع المرتبط:</strong> ${site || "عام"}</p>
+          <p><strong>المبلغ رقماً:</strong> ${amount} ريال لا غير</p>
+          <p><strong>البيان والسبب:</strong> ${notes}</p>
+          <p><strong>التاريخ:</strong> ${new Date().toLocaleDateString('ar-EG')}</p>
+          <div style="margin-top: 30px; display: flex; justify-content: space-between;">
+            <span>توقيع المستلم: ........................</span>
+            <span>توقيع المحاسب: ........................</span>
+          </div>
+        </div>
+      `;
+      document.getElementById('printableArea').style.display = 'block';
+      window.print();
+    }
+  </script>
+</body>
+</html>
